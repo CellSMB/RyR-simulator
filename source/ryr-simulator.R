@@ -82,7 +82,7 @@ Daxi[as.matrix(w)]<-daxi$d
 #number of measures to compare
 numMeasures = 9
 #number of simulation patterns to generate.
-numPatterns = 26
+numPatterns = 1
 
 # compute the observed measures for distance (radial, axial and nearest-neighborhood)
 obsdrad <- Drad[as.matrix(allX_pix)]

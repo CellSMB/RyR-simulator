@@ -1,4 +1,974 @@
 rm(list=ls())
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell4_data/SR_width_6/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell4_data/SR_width_6/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell4_data/SR_width_6/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=35#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=1000)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}#
+lines(r,actCurve,col="red")#
+# dev.off()#
+#
+library(spatstat)#
+library(s20x)#
+#
+x_u=1.01*max(X$x)#
+x_l=.99*min(X$x)#
+y_u=1.01*max(X$y)#
+y_l=.99*min(X$y)#
+z_u=1.01*max(X$z)#
+z_l=.99*min(X$z)#
+#
+#create box of observed points; ignore myofibrils in calculation of K, F and G. #
+win=box3(c(x_l,x_u),c(y_l,y_u),c(z_l,z_u))#
+#
+#generate variable P as a point process of the observed ryrs#
+P <- pp3(X$x, X$y, X$z, win)#
+#
+numSim=35#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+###fix for evans dodgey data##############################################
+#   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+#   Sblock[[i]] = S[[i]][block,]#
+##########################################################################
+   sP[[i]]=pp3(S[[i]][,1],S[[i]][,2],S[[i]][,3],win)#
+   #sP[[i]]=pp3(Sblock[[i]][,1],Sblock[[i]][,2],Sblock[[i]][,3],box3(c(l[1],u[1]),c(l[2],u[2]),c(l[3],u[3])))#
+}#
+#
+##############Cam's envelope########################
+#
+pKout=K3est(P)#
+pGout=G3est(P)#
+pFout=F3est(P)#
+pPout=pcf3est(P)#
+#
+simK=list(numSim)#
+simG=list(numSim)#
+simF=list(numSim)#
+simP=list(numSim)#
+curvesK=list(numSim)#
+curvesG=list(numSim)#
+curvesF=list(numSim)#
+curvesP=list(numSim)#
+for (i in 1:numSim) {#
+   simK[[i]]=K3est(sP[[i]])#
+   simG[[i]]=G3est(sP[[i]])#
+   simF[[i]]=F3est(sP[[i]])#
+   simP[[i]]=pcf3est(sP[[i]])#
+   curvesK[[i]]=simK[[i]]$iso#
+   curvesG[[i]]=simG[[i]]$km#
+   curvesF[[i]]=simF[[i]]$km#
+   curvesP[[i]]=simP[[i]]$iso#
+}#
+#
+layout20x(2,2)#
+#
+##do envelopes#
+simCurves=do.call(rbind,curvesK)#
+ordCurvesK=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesG)#
+ordCurvesG=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesF)#
+ordCurvesF=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesP)#
+ordCurvesP=apply(simCurves,2,sort)#
+plot(ordCurvesK[1,],type="l",main="Envelope for K Function")#
+lines(ordCurvesK[numSim,])#
+lines(pKout$iso,col="red")#
+plot(ordCurvesG[1,],type="l",main="Envelope for G Function")#
+lines(ordCurvesG[numSim,])#
+lines(pGout$km,col="red")#
+plot(ordCurvesF[1,],type="l",main="Envelope for F Function")#
+lines(ordCurvesF[numSim,])#
+lines(pFout$km,col="red")#
+plot(ordCurvesP[1,],type="l",main="Envelope for pcf Function")#
+lines(ordCurvesP[numSim,])#
+lines(pPout$iso,col="red")
+rm(list=ls())
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell2_data/SR_width_7/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell2_data/SR_width_7/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell2_data/SR_width_7/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=100)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}#
+lines(r,actCurve,col="red")#
+# dev.off()#
+#
+library(spatstat)#
+library(s20x)#
+#
+x_u=1.01*max(X$x)#
+x_l=.99*min(X$x)#
+y_u=1.01*max(X$y)#
+y_l=.99*min(X$y)#
+z_u=1.01*max(X$z)#
+z_l=.99*min(X$z)#
+#
+#create box of observed points; ignore myofibrils in calculation of K, F and G. #
+win=box3(c(x_l,x_u),c(y_l,y_u),c(z_l,z_u))#
+#
+#generate variable P as a point process of the observed ryrs#
+P <- pp3(X$x, X$y, X$z, win)#
+#
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+###fix for evans dodgey data##############################################
+#   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+#   Sblock[[i]] = S[[i]][block,]#
+##########################################################################
+   sP[[i]]=pp3(S[[i]][,1],S[[i]][,2],S[[i]][,3],win)#
+   #sP[[i]]=pp3(Sblock[[i]][,1],Sblock[[i]][,2],Sblock[[i]][,3],box3(c(l[1],u[1]),c(l[2],u[2]),c(l[3],u[3])))#
+}#
+#
+##############Cam's envelope########################
+#
+pKout=K3est(P)#
+pGout=G3est(P)#
+pFout=F3est(P)#
+pPout=pcf3est(P)#
+#
+simK=list(numSim)#
+simG=list(numSim)#
+simF=list(numSim)#
+simP=list(numSim)#
+curvesK=list(numSim)#
+curvesG=list(numSim)#
+curvesF=list(numSim)#
+curvesP=list(numSim)#
+for (i in 1:numSim) {#
+   simK[[i]]=K3est(sP[[i]])#
+   simG[[i]]=G3est(sP[[i]])#
+   simF[[i]]=F3est(sP[[i]])#
+   simP[[i]]=pcf3est(sP[[i]])#
+   curvesK[[i]]=simK[[i]]$iso#
+   curvesG[[i]]=simG[[i]]$km#
+   curvesF[[i]]=simF[[i]]$km#
+   curvesP[[i]]=simP[[i]]$iso#
+}#
+#
+layout20x(2,2)#
+#
+##do envelopes#
+simCurves=do.call(rbind,curvesK)#
+ordCurvesK=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesG)#
+ordCurvesG=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesF)#
+ordCurvesF=apply(simCurves,2,sort)#
+simCurves=do.call(rbind,curvesP)#
+ordCurvesP=apply(simCurves,2,sort)#
+plot(ordCurvesK[1,],type="l",main="Envelope for K Function")#
+lines(ordCurvesK[numSim,])#
+lines(pKout$iso,col="red")#
+plot(ordCurvesG[1,],type="l",main="Envelope for G Function")#
+lines(ordCurvesG[numSim,])#
+lines(pGout$km,col="red")#
+plot(ordCurvesF[1,],type="l",main="Envelope for F Function")#
+lines(ordCurvesF[numSim,])#
+lines(pFout$km,col="red")#
+plot(ordCurvesP[1,],type="l",main="Envelope for pcf Function")#
+lines(ordCurvesP[numSim,])#
+lines(pPout$iso,col="red")
+rm(list=ls())
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=100)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}#
+lines(r,actCurve,col="red")
+dim(actCurve)
+size(actCurve)
+len(actCurve)
+act
+actCurve
+npts
+nPts
+actCurve
+help(numeric)
+r
+dim(X)
+rm(list=ls())
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=100)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  print sum(check<=r[j])'\n'#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}
+help(print)
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=100)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  print (sum(check<=r[j])'\n')#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}
+Written by Evan Blumgart 02/02/11#
+# Modified/commented by Vijay Rajagopal#
+# Corrected by Cameron Walker #
+#                            - sped up (looping removed where possible)#
+#                            - torus metric edge correction implemented#
+#                            - quantiles added to Energy #
+#                            - iterative updating of metrics implemented#
+# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
+# (Can also using distance function and nearest neighbour distance variances as metrics)#
+#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
+#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
+#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
+#(male adult wistar rats)#
+#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
+path="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/"#
+source(paste(path,"CGW_sim.R",sep=""))#
+#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
+path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/output/"#
+path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/Cell1_data/SR_width_6/"#
+#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
+#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
+#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
+##change this to be the new cell, not Evan's cell#
+# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
+#X=read.table(paste(path,"X.txt",sep=""),header=T)#
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
+# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
+#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
+# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
+#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
+# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
+#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+d=read.csv(paste(path2,"d_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
+# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
+#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
+#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
+# for allX, so will treat X as allX and take a smaller block within X as X#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
+X_block = X[block,]#
+allX = X#
+allX_pix=X_pix#
+X=X_block#
+## define background distance transform 3D array#
+##w <- W/res+1 #w is the voxel coordinates version of W. #
+#W2=W#
+#W2[,1] = W2[,1] - min(W2[,1])#
+#W2[,2] = W2[,2] - min(W2[,2])#
+#W2[,3] = W2[,3] - min(W2[,3])#
+##
+#w<-W2#
+#w[,1] <- w[,1]/resx+1#
+#w[,2] <- w[,2]/resy+1#
+#w[,3] <- w[,3]/resz+1#
+##
+#w<-round(w)#
+##store the distance function as a hash table allowing for easy table look up when doing the reconstruction simulation.#
+#D = array(dim=round(u/res)+1) #
+#D[as.matrix(w)]<-d$d #
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
+D = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+D[as.matrix(w)]<-d$d #
+numMeasures = 9#
+numSim = 80000#
+numPatterns = 35#
+# compute the observed measures for distance#
+#obsd <- D[as.matrix(allX/res+1)] #
+obsd <- D[as.matrix(allX_pix)]#
+oDistMeasure=numeric(numMeasures)#
+oDistMeasure[1] <- mean(obsd)#
+oDistMeasure[2] <- sd(obsd) #
+oDistMeasure[3:9] <- quantile(obsd,seq(0.125,0.875,length=7))#
+####replaced X with allX - July 22nd 2012#
+####introduced allX_pix instead of using res - Oct 23 2012#
+# compute mean of observed measures for nearest neigbour distance#
+#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- sd(obsNNd) #
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
+########draw envelopes#####
+numSim=55#
+S=list(numSim)#
+Sblock=list(numSim)#
+sP=list(numSim)#
+for (i in 1:numSim){#
+   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
+   block = apply( S[[i]],1,function(z){all((l_block<=z)&(z<=u_block))} )#
+   Sblock[[i]] = S[[i]][block,]#
+}#
+r=seq(0,100,length=100)#
+curves=list(numSim)#
+for (i in 1:numSim) {#
+   check=findDist(Sblock[[i]],S[[i]])#
+   nPts = dim(check)[1]#
+   curves[[i]] = numeric(100)#
+   for (j in 1:100) {#
+      curves[[i]][j] = (sum(check<=r[j])-1)/nPts#
+   }#
+}#
+#
+# Start PNG device driver to save output to figure.png#
+#png(filename=paste(path3,"cell2_envelope_cell3_obs_v2.png",sep=""), height=295, width=300, #
+# bg="white")#
+#
+simCurves=do.call(rbind,curves)#
+ordCurves=apply(simCurves,2,sort)#
+plot(r,ordCurves[1,],type="l",main="Cell 1 Envelope with Observed Cell 1")#
+lines(r,ordCurves[numSim,])#
+#
+act = findDist(X,allX)#
+nPts = dim(act)[1]#
+actCurve = numeric(100)#
+for (j in 1:100) {#
+  print(sum(check<=r[j])'\n')#
+  actCurve[j] = (sum(check<=r[j])-1)/nPts#
+}
+rm(list=ls())
 help(rbind)
 rm(list=ls())
 Written by Evan Blumgart 02/02/11#
@@ -7256,268 +8226,6 @@ plot(simEnvG)#
 plot(simEnvK)#
 plot(simEnvP)
 plot(simEnvG)
-- iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-path="./"#
-source(paste(path,"nnd-calculators.R",sep=""))#
-path2="../input-files/master-cell/"#
-path3="../output-files/target-cell/"#
-path4="../input-files/target-cell/"#
-# read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)#
-X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
-X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
-# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
-allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
-allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
-# read in non-myofibril voxels of the experimental data stored in a file W.txt#
-W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
-w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)#
-# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
-drad=read.csv(paste(path2,"d_radial_micron.txt",sep=""),header=T) #Radial distance from given voxel (W) to z-disk#
-daxi=read.csv(paste(path2,"d_axial_micron.txt",sep=""),header=T) #Axial distance from given voxel (W) to z-disk#
-# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
-#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
-#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
-l=apply(W,2,min)#
-u=apply(W,2,max)#
-vol_obsBox <- prod(u-l)#
-#Would like to use allX and X, but do not have any of the distance information#
-# for allX, so will treat X as allX and take a smaller block within X as X#
-u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
-l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
-block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
-X_block = X[block,]#
-allX = X#
-allX_pix=X_pix#
-X=X_block#
-# define voxel resolution#
-resx = 0.0732157#
-resy = 0.0732157#
-resz = 0.053535#
-res <-c(resx,resy,resz)#
-#set up look up table of axial and radial distances from each available voxel for RyR cluster simulation to z-disc#
-Drad = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
-Drad[as.matrix(w)]<-drad$d #
-Daxi = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
-Daxi[as.matrix(w)]<-daxi$d #
-#
-#number of measures to compare#
-numMeasures = 9#
-#number of simulation patterns to generate.#
-numPatterns = 26#
-# compute the observed measures for distance (radial, axial and nearest-neighborhood)#
-obsdrad <- Drad[as.matrix(allX_pix)]#
-oDistRadMeasure=numeric(numMeasures)#
-oDistRadMeasure[1] <- mean(obsdrad)#
-oDistRadMeasure[2] <- sd(obsdrad) #
-oDistRadMeasure[3:9] <- quantile(obsdrad,seq(0.125,0.875,length=7))#
-#axial distances#
-obsdaxi <- Daxi[as.matrix(allX_pix)]#
-oDistAxiMeasure=numeric(numMeasures)#
-oDistAxiMeasure[1] <- mean(obsdaxi)#
-oDistAxiMeasure[2] <- sd(obsdaxi) #
-oDistAxiMeasure[3:9] <- quantile(obsdaxi,seq(0.125,0.875,length=7))#
-#
-####replaced X with allX - July 22nd 2012#
-####introduced allX_pix instead of using res - Oct 23 2012#
-# compute mean of observed measures for nearest neigbour distance#
-#obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
-#nearest neighborhood distances.#
-obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
-oNNdMeasure=numeric(numMeasures)#
-oNNdMeasure[1] <- mean(obsNNd)#
-oNNdMeasure[2] <- sd(obsNNd) #
-oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
-#set up histogram parameters#
-filename="master_cell"#
-main = "Master Cell"#
-#breaks in distance for each distance type#
-nndbreaks = c(0,0.2,0.4,0.6,0.8,1.2)#
-radbreaks = c(0,0.2,0.4,0.6,0.8)#
-#
-# Start PNG device driver to save output to figure.png#
-png(filename=paste(path3,filename,"_obsdrad.png",sep=""), height=295, width=300, #
- bg="white")#
-#
- hist(obsdrad,breaks="Scott",xlab="Radial Distance of RyR cluster from Z-disc",main=main)#
- dev.off()#
-png(filename=paste(path3,filename,"_obsdaxi.png",sep=""), height=295, width=300, #
- bg="white")#
-#
- hist(obsdaxi,breaks="Scott",xlab="Axial Distance of RyR cluster from Z-disc",main=main)#
- dev.off()#
-png(filename=paste(path3,filename,"_obsnnd.png",sep=""), height=295, width=300, #
- bg="white")#
-#
- hist(obsNNd,breaks="Scott",xlab="Nearest Neighbour Distances for RyR clusters",main=main)#
- dev.off()
-help(set)
-help(??set)
-rm(list=ls())
-Modified/corrected/commented by Vijay Rajagopal#
-#                             - added split in radial versus axial distance of RyR cluster to Z-disc#
-#                             - added termination criteria#
-#                             - corrected and validated code#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("./")#
-path="./"#
-source(paste(path,"nnd-calculators.R",sep=""))#
-path2="../input-files/master-cell/"#
-path3="../output-files/target-cell/"#
-path4="../input-files/target-cell/"#
-# read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)#
-X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)
-rm(list=ls())
-Modified/corrected/commented by Vijay Rajagopal#
-#                             - added split in radial versus axial distance of RyR cluster to Z-disc#
-#                             - added termination criteria#
-#                             - corrected and validated code#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("./")#
-path="./"#
-source(paste(path,"nnd-calculators.R",sep="",chdir=T))#
-path2="../input-files/master-cell/"#
-path3="../output-files/target-cell/"#
-path4="../input-files/target-cell/"#
-# read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)#
-X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)
-rm(list=ls())
-Modified/corrected/commented by Vijay Rajagopal#
-#                             - added split in radial versus axial distance of RyR cluster to Z-disc#
-#                             - added termination criteria#
-#                             - corrected and validated code#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("./")#
-path="./"#
-source(paste(path,"nnd-calculators.R",sep=""),chdir=TRUE)#
-path2="../input-files/master-cell/"#
-path3="../output-files/target-cell/"#
-path4="../input-files/target-cell/"#
-# read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)#
-X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)
-Modified/corrected/commented by Vijay Rajagopal#
-#                             - added split in radial versus axial distance of RyR cluster to Z-disc#
-#                             - added termination criteria#
-#                             - corrected and validated code#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("./")#
-path=getwd()#
-source(paste(path,"nnd-calculators.R",sep=""))
-rm(list=ls())
-Modified/corrected/commented by Vijay Rajagopal#
-#                             - added split in radial versus axial distance of RyR cluster to Z-disc#
-#                             - added termination criteria#
-#                             - corrected and validated code#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
-# This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("./")#
-path=getwd()#
-source(paste(path,"/nnd-calculators.R",sep=""))#
-path2="../input-files/master-cell/"
-getwd()
-rm(list=ls())
-This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("/Users/vijayaraghavan/ryr-simulator")#
-path=getwd()#
-source(paste(path,"/nnd-calculators.R",sep=""))
-rm(list=ls())
-This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
-# FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. This assumption was validated in recent paper (submitted DATE)#
-##################
-#options(warn=2) - uncomment this for debugging purposes#
-###################
-setwd("/Users/vijayaraghavan/ryr-simulator/source")#
-path=getwd()#
-source(paste(path,"/nnd-calculators.R",sep=""))
-getwd()
-path2="/../input-files/master-cell/"#
-path3="/../output-files/target-cell/"#
-path4="/../input-files/target-cell/"
-X=read.csv(paste(path,path2,"X_micron.txt",sep=""),header=T)
-X_pix=read.csv(paste(path,path2,"X_pixel.txt",sep=""),header=T)
-rm(list=ls())
 Modified/corrected/commented by Vijay Rajagopal#
 #                             - added split in radial versus axial distance of RyR cluster to Z-disc#
 #                             - added termination criteria#
@@ -7618,7 +8326,7 @@ radbreaks = c(0,0.2,0.4,0.6,0.8)#
 png(filename=paste(path,path3,filename,"_obsdrad.png",sep=""), height=295, width=300, #
  bg="white")#
 #
- hist(obsdrad,breaks="Scott",xlab="Radial Distance of RyR cluster from Z-disc",main=main)#
+ hist(obsdrad,breaks=radbreaks,xlab="Radial Distance of RyR cluster from Z-disc",main=main)#
  dev.off()#
 png(filename=paste(path,path3,filename,"_obsdaxi.png",sep=""), height=295, width=300, #
  bg="white")#
@@ -7628,7 +8336,7 @@ png(filename=paste(path,path3,filename,"_obsdaxi.png",sep=""), height=295, width
 png(filename=paste(path,path3,filename,"_obsnnd.png",sep=""), height=295, width=300, #
  bg="white")#
 #
- hist(obsNNd,breaks="Scott",xlab="Nearest Neighbour Distances for RyR clusters",main=main)#
+ hist(obsNNd,breaks=nndbreaks,xlab="Nearest Neighbour Distances for RyR clusters",main=main)#
  dev.off()#
 oldVol_obsBox = vol_obsBox#
 #####introduce intensity factor - October 11 2012#
