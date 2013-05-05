@@ -25,14 +25,15 @@
 #CHANGE THIS TO POINT TO WHERE YOUR local machine ryr-simulator github source directory is.
 ###################################################
 
-setwd("/Users/vijayaraghavan/ryr-simulator/source")
+setwd("/Users/vraj004/ryr-simulator/source")
+source("settings.R")
 path=getwd()
 source(paste(path,"/nnd-calculators.R",sep="")) #additional functions for calculating nearest-neighborhood distances.
 
 # Additional paths for input and output files. Master is the cell from which statistics are extracted. Target is the cell onto which RyR clusters will be simulated
-path2="/../input-files/master-cell/"
-path3="/../output-files/target-cell/"
-path4="/../input-files/target-cell/"
+#path2="/../input-files/master-cell/"
+#path3="/../output-files/target-cell/"
+#path4="/../input-files/target-cell/"
 
 # read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)
 X=read.csv(paste(path,path2,"X_micron.txt",sep=""),header=T)
