@@ -4,8 +4,11 @@
 
 clear all; close all;
 
+%load in an image stack to acquire the image stack information to use for the ryr cluster data image stack
 mfib_flnm = '/Users/vraj004/Documents/heart/data/soeller/Bass/Cell3_processing&analysis/Rotated_stacks_-6cor_-17sag_interp/cell3_phalloidin_reorient_binary_withDents_vFinal.tif'; % FLNM CHANGED
+%RyR simulation file to convert
 flnmRyRcld = '/Users/vraj004/Documents/heart/sims/R/camSim/Cell3_data/d_sep_zmod_SR_width_6/cell2on3/simPP10.txt';
+%name pattern of the image stack to be generated
 flnmRyRcld_img = '/Users/vraj004/Documents/heart/sims/R/camSim/Cell3_data/d_sep_zmod_SR_width_6/cell2on3/sim10_%d.tiff';
 delimiterIn = '\t';
 headerlinesIn = 1;
