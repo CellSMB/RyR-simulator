@@ -1,6 +1,6 @@
-ryr-simulator
+RyR-simulator
 =============
-An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. 
+An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Please refer to this website if you use this code for your research. We will provide details of the paper we have submitted once it is accepted for publication. 
 
 **Applications/Packages required:**
 
