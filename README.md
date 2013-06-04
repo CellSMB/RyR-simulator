@@ -2,10 +2,10 @@ RyR-simulator
 =============
 An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Please refer to this website if you use this code for your research. We will provide details of the paper we have submitted once it is accepted for publication. 
 
-**Applications/Packages required:**
+**required Applications/Packages**
 
 R-statistics package available from www.r-project.org
-MATLAB      
+MATLAB (optional: only used for point pattern visualization)     
 
 **FOLDER INFORMATION**
 input-files/: 
@@ -29,8 +29,17 @@ source:
 contains all the source files for running in R.
 
 *ryr-simulator.R*: The main program to run the RyR cluster simulator. 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-NOTE: CHANGE PATH TO LOCAL MACHINE PATH OF THE ryr-simulator/source DIRECTORY ON LINE NUMBER 28
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 *nnd-calculators.R*: A bunch of calculators of nearest-neighborhood distances; currently using CGW version which measures torus distance. 
+
+RUNNING ONE OF THE SCRIPTS
+
+The main program is the script ryr-simulator.R . To run the script we recommend to run the source command at the R prompt, e.g.
+
+    source('/path-to-distribution/RyR-simulator/source/ryr-simulator.R', chdir = TRUE)
+
+NOTE:  1) replace /path-to-distribution with the proper path to the top directory of the RyR-simulator distribution
+       2) IMPORTANT: use the "chdir = TRUE" option of the source command - otherwise it will not work!
+
+This procedure has been tested on OS X with R 2.15.0 GUI 1.51 (Leopard build 64-bit (6148)). You can obtain R for OS X at http://cran.r-project.org/bin/macosx/.
+ 

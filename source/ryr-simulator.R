@@ -25,7 +25,7 @@
 #CHANGE THIS TO POINT TO WHERE YOUR local machine ryr-simulator github source directory is.
 ###################################################
 
-setwd("/Users/vraj004/ryr-simulator/source")
+#setwd("/Users/xxxxxx/src/ryr-simulator/source")
 source("settings.R")
 path=getwd()
 source(paste(path,"/nnd-calculators.R",sep="")) #additional functions for calculating nearest-neighborhood distances.

@@ -1,6 +1,6 @@
 #settings file to be edited to set up correct paths
 #path of source files
-setwd("/Users/vraj004/ryr-simulator/source")
+#setwd("/Users/vraj004/ryr-simulator/source")
 #path of master geometry
 path2="/../input-files/master-cell/"
 #path of target geometry
