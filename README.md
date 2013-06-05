@@ -5,9 +5,9 @@ An R-statistics package script for simulating anatomically realistic distributio
 **required Applications/Packages**
 ----------------------------------
 
-R-statistics package available from www.r-project.org
+R - statistics package available from <http://www.r-project.org>
 
-MATLAB (optional: only used for point pattern visualization)     
+MATLAB - optional: only used for point pattern visualization     
 
 **FOLDER INFORMATION**
 ----------------------
@@ -39,14 +39,14 @@ contains all the source files for running in R.
 RUNNING ONE OF THE SCRIPTS
 --------------------------
 
-The main program is the script ryr-simulator.R . To run the script we recommend to run the source command at the R prompt, e.g.
+The main program is the script ryr-simulator.R . To run the script we recommend using the `source` command at the R prompt:
 
     source('/path-to-distribution/RyR-simulator/source/ryr-simulator.R', chdir = TRUE)
 
 *NOTE*:  
 
-1. replace /path-to-distribution with the proper path to the top directory of the RyR-simulator distribution
-2. *IMPORTANT*: use the "chdir = TRUE" option of the source command - otherwise it will not work!
+1. replace `/path-to-distribution/RyR-simulator` with the proper path to the top level directory of the RyR-simulator distribution
+2. *IMPORTANT*: use the `chdir = TRUE` option of the source command - otherwise it will not work!
 
 This procedure has been tested on OS X with R 2.15.0 GUI 1.51 (Leopard build 64-bit (6148)). You can obtain R for OS X at <http://cran.r-project.org/bin/macosx/>.
  
