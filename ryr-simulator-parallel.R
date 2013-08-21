@@ -178,7 +178,7 @@ l_block = 0.9*(l-(u-l)/2)+(u-l)/2
 
 library(foreach)
 library(doSNOW)
-# assigning threads to submaximal cores separate cores
+# assigning threads to separate cores
 numCores <- parallel:::detectCores()-1 
 cl <- makeCluster(numCores, type="SOCK")
 registerDoSNOW(cl)
