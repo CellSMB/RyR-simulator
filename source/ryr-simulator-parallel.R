@@ -27,7 +27,8 @@
 
 t1 <- proc.time()  # tic
 
-#setwd("/Users/xxxxxx/src/ryr-simulator/source")
+setwd("/Users/vraj004/RyR-Simulator/source")
+
 source("settings.R")
 path=getwd()
 source(paste(path,"/nnd-calculators.R",sep="")) #additional functions for calculating nearest-neighborhood distances.
@@ -194,7 +195,7 @@ N = nrow(X)
 
 sim_convgdE = numeric(numPatterns)
 #for (j in 1:numPatterns) {   # used for single node processing
-foreach (j = 1:numPatterns) %dopar% {   # used for parallel processing
+sim_convgdE<-foreach (j = 1:numPatterns) %dopar% {   # used for parallel processing
 
         # define initial simulated point pattern and data structures
         simX=matrix(0,nrow=N,ncol=3)
@@ -296,15 +297,16 @@ foreach (j = 1:numPatterns) %dopar% {   # used for parallel processing
                 }
         }
         if(1){
-                sim_convgdE[j] <- E
+                
                 write(t(simX),file=paste(path3,"simPP",j,".txt",sep=""),ncolumns=3,sep='\t')
+                return(E)
         }
         else j=j-1
 }
 #t2 <- proc.time()
 #print(t2-t1)
 #write out the list of final E values for the each of the converged patterns
-write(sim_convgdE,file=paste(path3,"sim_convgdE",".txt",sep=""),ncolumns=1,sep='\t')
+write.table(sim_convgdE,file=paste(path3,"sim_convgdE",".txt",sep=""),sep='\t',row.names=FALSE,col.names=FALSE)
 for (j in 1:numPatterns) {
    P=read.table(paste(path3,"simPP",j,".txt",sep=""),header=F)
    block = apply( P,1,function(z){all((l_block<=z)&(z<=u_block))} )
