@@ -89,7 +89,7 @@ Daxi[as.matrix(w)]<-daxi$d
 #number of measures to compare
 numMeasures = 9
 #number of simulation patterns to generate.
-numPatterns = 2
+numPatterns = 119
 
 # compute the observed measures for distance (radial, axial and nearest-neighborhood)
 obsdrad <- Drad[as.matrix(allX_pix)]
@@ -180,7 +180,7 @@ l_block = 0.9*(l-(u-l)/2)+(u-l)/2
 library(foreach)
 library(doSNOW)
 # assigning threads to separate cores
-numCores <- parallel:::detectCores()-1 
+numCores =  parallel:::detectCores()-1 
 cl <- makeCluster(numCores, type="SOCK")
 registerDoSNOW(cl)
 
@@ -191,7 +191,9 @@ registerDoSNOW(cl)
 # Read in the number of rows from the sampling box data
 # This is the number of points that the algorithm will try to simulate on the new cell geometry
 #N=floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
-N = nrow(X)
+X_target=read.csv(paste(path4,"X_micron.txt",sep=""),header=T)
+
+N = nrow(X_target)
 
 sim_convgdE = numeric(numPatterns)
 #for (j in 1:numPatterns) {   # used for single node processing
