@@ -9,7 +9,10 @@
 #                            - iterative updating of metrics implemented
 #implemented by Gregory Bass
 #                            - parallelising simulator
-#                            - created settings file
+#                            - writing text file with elapsed time and number of cores used
+#                            - Added '1.0' value to 'nndbreaks' and 'radbreaks'
+#                            - Voxel resolution set automatically via appropriate matlab file
+#                            - input and output paths can now be set to any folder, not just the source folder for the simulator package
 
 # Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)
 
