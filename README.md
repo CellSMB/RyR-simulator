@@ -22,17 +22,39 @@ target-cell/
 
  - directory of same input files as those in master-cell but with information from target cell onto which RyR clusters must be simulated. Folder currently contains data extracted from Cell 1 of submitted paper.
 
+target-tomo-cell/
+ - directory of input files of an electron tomogram derived image stack of myofibrils and mitochondria for RyR cluster simulation.
+
 output-files/:
 
 target-cell/
 
  - The RyR cluster patterns simulated on the target cell along with the histograms of the observed ryr cluster nearest-neighborhood distances and the axial and radial distances to the z-discs. Current simulations reconstruct RyR cluster distributions on Cell 1 from the observed data on Cell 1 from submitted paper.
 
+target-tomo-cell/
+
+ - directory of output files of RyR cluster distributions on a tomogram-derived template of myofibrils and mitochondria.
+
+fem_simulation_inputs:
+
+tomo_mesh.1.node/ele/face
+ 
+ - tetgen generated half-sarcomere mesh files of an electron-tomogram derived rat ventricular myocyte
+
+tomo_mesh.1.bdnode
+
+ - node numbers of the mesh around the outer surface.
+
+ryrClusterDensity_and_releaseTimeLag_fields_N123_simPP3_tausim2
+
+ - text file containing spatially varying fields representing density of ryr clusters and the ryr-cluster associated lag in triggering of calcium release; the fields are defined at the mesh nodes. 
 source:
 
 contains all the source files for running in R.
 
 *ryr-simulator.R*: The main program to run the RyR cluster simulator. 
+
+*ryr-simulator-parallel.R*: The main program to run the RyR cluster simulator with parallel processing. 
 
 *nnd-calculators.R*: A bunch of calculators of nearest-neighborhood distances; currently using CGW version which measures torus distance. 
 
