@@ -1,0 +1,2 @@
+1313.454 seconds 
+7 cores
