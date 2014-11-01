@@ -191,7 +191,7 @@ registerDoSNOW(cl)
 
 # Read in the number of rows from the sampling box data
 # This is the number of points that the algorithm will try to simulate on the new cell geometry
-N= 87 #floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
+N= 123 #floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
 #X_target=read.csv(paste(path4,"X_micron.txt",sep=""),header=T)
 #N = nrow(X_target)
 
