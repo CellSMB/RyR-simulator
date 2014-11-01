@@ -2,9 +2,12 @@
 #path of source files
 #setwd("/Users/vraj004/ryr-simulator/source")
 #path of master geometry
-path2="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/sham11/Cell1/SR_width_6/"
+path2="/Users/vrajagopal/Documents/heart/sims/R/camSim/sham11/Cell1/SR_width_6/"
 #path of target geometry
-path4="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/sham11/Cell1/SR_width_6/"
+path4="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/"
 #path of output files
-path3="/Users/vijayaraghavan/Documents/heart/sims/R/camSim/sham11/Cell1/trial/"
-
+path3="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/human/"
+etol = 0.005
+numIter = 2000000
+numPatterns = 120
+numCores = 7

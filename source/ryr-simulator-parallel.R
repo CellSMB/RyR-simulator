@@ -27,7 +27,7 @@
 
 t1 <- proc.time()  # tic
 
-setwd("/Users/vraj004/RyR-Simulator/source")
+setwd("/Users/vrajagopal/RyR-Simulator/source")
 
 source("settings.R")
 path=getwd()
@@ -74,9 +74,9 @@ X=X_block
 # read in voxel resolution
 voxres = read.csv(paste(path2,"voxel_resolution_micron.txt",sep=''),header=T) 
 
-#resx = 0.0732157
-#resy = 0.0732157
-#resz = 0.2
+#resx = 0.035
+#resy = 0.035
+#resz = 0.035
 #res <- c(resx,resy,resz)
 res <- c(voxres[,1],voxres[,2],voxres[,3])
 
@@ -89,7 +89,7 @@ Daxi[as.matrix(w)]<-daxi$d
 #number of measures to compare
 numMeasures = 9
 #number of simulation patterns to generate.
-numPatterns = 119
+#numPatterns = 119 set in settings
 
 # compute the observed measures for distance (radial, axial and nearest-neighborhood)
 obsdrad <- Drad[as.matrix(allX_pix)]
@@ -120,8 +120,9 @@ oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))
 filename="master_cell"
 main = "Master Cell"
 #breaks in distance for each distance type
-nndbreaks = c(0,0.2,0.4,0.6,0.8,1.0,1.2)  # this was missing 1.0
+nndbreaks = c(0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.8)  # this was missing 1.0
 radbreaks = c(0,0.2,0.4,0.6,0.8,1.0)      # this was missing 1.0
+axibreaks = c(-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.8,1.0)
 
 # Start PNG device driver to save output to figure.png
 png(filename=paste(path3,filename,"_obsdrad.png",sep=""), height=295, width=300, 
@@ -132,7 +133,7 @@ png(filename=paste(path3,filename,"_obsdrad.png",sep=""), height=295, width=300,
 png(filename=paste(path3,filename,"_obsdaxi.png",sep=""), height=295, width=300, 
  bg="white")
 
- hist(obsdaxi,breaks="Scott",xlab="Axial Distance of RyR cluster from Z-disc",main=main)
+ hist(obsdaxi,breaks=axibreaks,xlab="Axial Distance of RyR cluster from Z-disc",main=main)
  dev.off()
 png(filename=paste(path3,filename,"_obsnnd.png",sep=""), height=295, width=300, 
  bg="white")
@@ -180,7 +181,7 @@ l_block = 0.9*(l-(u-l)/2)+(u-l)/2
 library(foreach)
 library(doSNOW)
 # assigning threads to separate cores
-numCores =  parallel:::detectCores()-1 
+#numCores = parallel:::detectCores()-1  now set in settings.R
 cl <- makeCluster(numCores, type="SOCK")
 registerDoSNOW(cl)
 
@@ -190,19 +191,24 @@ registerDoSNOW(cl)
 
 # Read in the number of rows from the sampling box data
 # This is the number of points that the algorithm will try to simulate on the new cell geometry
-#N=floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
-X_target=read.csv(paste(path4,"X_micron.txt",sep=""),header=T)
-
-N = nrow(X_target)
+N= 87 #floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
+#X_target=read.csv(paste(path4,"X_micron.txt",sep=""),header=T)
+#N = nrow(X_target)
 
 sim_convgdE = numeric(numPatterns)
+zdisc_indxs <- which(daxi$d==0.0,arr.ind=FALSE)
 #for (j in 1:numPatterns) {   # used for single node processing
 sim_convgdE<-foreach (j = 1:numPatterns) %dopar% {   # used for parallel processing
 
         # define initial simulated point pattern and data structures
-        simX=matrix(0,nrow=N,ncol=3)
-        ptsIndex=sample(1:length(W$x),N)
-        simX=as.matrix(W[ptsIndex,])
+        simX=matrix(0,nrow=N,ncol=3) 
+        #just wanting to restrict to picking pixels at z-disc to reduce computational cost. Easy to pick for tomo_schnieder because z-disc is strict plane.
+        #below two commented lines used in the more general case
+        #ptsIndex=sample(1:length(W$x),N)
+        #simX=as.matrix(W[ptsIndex,])
+        zdiscsample = sample(1:length(zdisc_indxs),N)
+        ptsIndex = zdisc_indxs[zdiscsample]
+        simX = as.matrix(W[ptsIndex,])
         avail=(1:length(W$x))[-ptsIndex]
 
         simdrad=Drad[as.matrix(w[ptsIndex,])]
@@ -224,15 +230,18 @@ sim_convgdE<-foreach (j = 1:numPatterns) %dopar% {   # used for parallel process
         simNNdMeasure[2] <- sd(simNNd) 
         simNNdMeasure[3:9] <- quantile(simNNd,seq(0.125,0.875,length=7))
 
-        E <- sum((c(oDistRadMeasure[1:numMeasures],oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-c(simDistRadMeasure[1:numMeasures],simDistAxiMeasure[1:numMeasures],simNNdMeasure[1:numMeasures]))^2)
+        #E <- sum((c(oDistRadMeasure[1:numMeasures],oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-#c(simDistRadMeasure[1:numMeasures],simDistAxiMeasure[1:numMeasures],simNNdMeasure[1:numMeasures]))^2)
+        #testing without radial distance measure matching.
+        E <- sum((c(oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-c(simDistAxiMeasure[1:numMeasures],simNNdMeasure[1:numMeasures]))^2)
+
     propE<-E;
     cat(propE)
         propSimDistRadMeasure=numeric(numMeasures)
         propSimDistAxiMeasure=numeric(numMeasures)
         propSimNNdMeasure=numeric(numMeasures)
         i=0;
-        numIter = 200000
-        etol = 0.001
+        #etol=0.0005 set up in settings file now
+        #numIter=500000 set up in settings file now
         while((i<=numIter)&&(propE>etol) ) {
 #        while((propE>0.00005) ) {
                   i=i+1;
@@ -281,7 +290,8 @@ sim_convgdE<-foreach (j = 1:numPatterns) %dopar% {   # used for parallel process
                 propSimNNdMeasure[2] <- sd(propSimNNd) 
                 propSimNNdMeasure[3:9] <- quantile(propSimNNd,seq(0.125,0.875,length=7))
 
-                propE = sum((c(oDistRadMeasure[1:numMeasures],oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-c(propSimDistRadMeasure[1:numMeasures],propSimDistAxiMeasure[1:numMeasures],propSimNNdMeasure[1:numMeasures]))^2)
+                #propE = sum((c(oDistRadMeasure[1:numMeasures],oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-c(propSimDistRadMeasure[1:numMeasures],propSimDistAxiMeasure[1:numMeasures],propSimNNdMeasure[1:numMeasures]))^2)
+                propE = sum((c(oDistAxiMeasure[1:numMeasures],oNNdMeasure[1:numMeasures])-c(propSimDistAxiMeasure[1:numMeasures],propSimNNdMeasure[1:numMeasures]))^2)
                 if (propE < E) { # no probability of non-acceptance
                     cat(propE,"\n")
                         E <- propE  
@@ -301,6 +311,7 @@ sim_convgdE<-foreach (j = 1:numPatterns) %dopar% {   # used for parallel process
         if(1){
                 
                 write(t(simX),file=paste(path3,"simPP",j,".txt",sep=""),ncolumns=3,sep='\t')
+                write(t(ptsIndex),file=paste(path3,"simPP",j,"_pixel.txt",sep=""),ncolumns=1,sep='\t')
                 return(E)
         }
         else j=j-1
