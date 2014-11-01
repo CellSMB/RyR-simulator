@@ -7,6 +7,10 @@
 #                            - torus metric edge correction implemented
 #                            - quantiles added to Energy 
 #                            - iterative updating of metrics implemented
+#implemented by Gregory Bass
+#                            - parallelising simulator
+#                            - created settings file
+
 # Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)
 
 
