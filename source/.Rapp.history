@@ -1,339 +1,3 @@
-plot(QTest,add=TRUE,cex=2)
-Fest(ryrpt)
-fest<-Fest(ryrpt)
-plot(fest)
-gest<-Gest(ryrpt)
-plot(gest)
-help(Fest)
-help(spatstat)
-ppm(ryrpt)
-help(envelope)
-envelope(ryrpt,fun=Kest,nsim=99)
-junk<-envelope(ryrpt,fun=Kest,nsim=99)
-plot(junk)
-kest<-Kest(ryrpt)
-plot(kest)
-plot(ryrpt)
-plot(gest)
-plot.ppp(gest,correction="km")
-plot.ppp(gest,km)
-plot(fest,km)
-plot(fest,cbind(km))
-plot(fest,cbind(km,cs)~theo)
-plot(fest)
-plot(gest)
-plot(gest,cbind(km)~theo)
-plot(gest)
-plot(X_mc)
-ryrpt
-fest
-plot(fest hazard~r)
-plot(fest hazard ~ r)
-plot(fest,hazard~r)
-gest
-plot(gest,km~r)
-plot(gest,theo~r)
-plot(gest,han~r)
-plot(gest,rs~r)
-ryrpt
-lest<-Lest(ryrpt)
-lest
-plot(lest,border~r)
-plot(lest,trans~r)
-plot(lest,cbind(trans,theo)~r)
-bdbox<-c([109 278],[261 344])
-bdbox<-c([109,278],[261,344])
-bdbox<-{c(109,278,c(261,344)}
-bdbox<-c(109,278,261,344)
-bdbox
-typeof(bdbox)
-bdbox<-list(c(109,278,261,344))
-typeof(bdbox)
-bdbox
-bdbox<-list(109,278,261,344)
-bdbox
-bdbox<-list(c(109,278),c(261,344))
-bdbox
-bdbox[1,1]
-bdbox[1,[1]]
-bdbox
-bdbox[[1]]
-bdbox[[1],1]
-bdbox[[1],[1]]
-bdbox[[1]][1]
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)
-xrange
-yrange
-X_mc$y
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,ypx)
-window<-owin(mask=firstZ_W,xrange,yrange)
-plot(window)
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,ypx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}#
-#
-ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,xrange,yrange))
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,ypx,xpx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}#
-#
-ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,xrange,yrange))
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,ypx,xpx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}#
-#
-ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,yrange,xrange))#
-plot(window)
-window<-owin(mask=firstZ_W,xrange,yrange)
-plot(window)
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,xpx)
-window<-owin(mask=firstZ_W,xrange,yrange)
-plot(window)
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,xpx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}#
-#
-ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,xrange,yrange))#
-plot(window)
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,xpx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}
-window<-owin(mask=firstZ_W,xrange,yrange)
-plot(window)
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,xpx,ypx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}
-rm(list=ls())#
-library(spatstat)#
-W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice10_zdisc_Cell1_pixel.txt'#
-X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice10_zdisc_Cell1_micron.txt'#
-W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
-X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
-xres<-0.073216#
-yres<-0.073216#
-bdbox<-list(c(109,278),c(261,344))#
-xmin<-xres*(bdbox[[1]][1]-1)#
-xmax<-xres*(bdbox[[1]][2]-1)#
-ymin<-yres*(bdbox[[2]][1]-1)#
-ymax<-yres*(bdbox[[2]][2]-1)#
-xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
-ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
-#
-xrange<-c(xmin,xmax)#
-yrange<-c(ymin,ymax)#
-firstZ_W<-matrix(FALSE,ypx,xpx)#
-#
-num_Wpx <- length(W_px$x)#
-for(pt in 1:num_Wpx){#
-	row<-W_px$y[pt]#
-	col<-W_px$x[pt]#
-	shiftedrow<-row-bdbox[[2]][1]#
-	shiftedcol<-col-bdbox[[1]][1]#
-	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
-}
-window<-owin(mask=firstZ_W,xrange,yrange)
-plot(window)
 ryrpt<-ppp(X_mc$y,X_mc$x,window=owin(mask=firstZ_W,xrange,yrange))
 ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,xrange,yrange))
 plot(ryrpt)
@@ -776,6 +440,131 @@ plot(punif(x,min=0,max=1))
 hist(punif(x,min=0,max=1))
 hist(dunif(x,min=0,max=1))
 hist(punif(x,min=0,max=1))
+rm(list=ls())#
+library(spatstat)#
+W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice18_zdisc_Cell1_pixel.txt'#
+X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice18_zdisc_Cell1_micron.txt'#
+W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
+X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
+xres<-0.073216#
+yres<-0.073216#
+bdbox<-list(c(109,278),c(261,344))#
+xmin<-xres*(bdbox[[1]][1]-1)#
+xmax<-xres*(bdbox[[1]][2]-1)#
+ymin<-yres*(bdbox[[2]][1]-1)#
+ymax<-yres*(bdbox[[2]][2]-1)#
+xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
+ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
+#
+xrange<-c(xmin,xmax)#
+yrange<-c(ymin,ymax)#
+#
+ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(xrange,yrange))#
+plot(ryrpt)
+rm(list=ls())#
+library(spatstat)#
+W_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/W_slice18_zdisc_Cell1_pixel.txt'#
+X_file<-'/Users/vrajagopal/Google Drive/heart/plos-resubmit/Ca_Cube/X_slice18_zdisc_Cell1_micron.txt'#
+W_px<-scan(file=W_file,what=list(x=0,y=0),sep=',',skip=1)#
+X_mc<-scan(file=X_file,what=list(x=1,y=1),sep=',',skip=1)#
+xres<-0.073216#
+yres<-0.073216#
+bdbox<-list(c(109,278),c(261,344))#
+xmin<-xres*(bdbox[[1]][1]-1)#
+xmax<-xres*(bdbox[[1]][2]-1)#
+ymin<-yres*(bdbox[[2]][1]-1)#
+ymax<-yres*(bdbox[[2]][2]-1)#
+xpx<-bdbox[[1]][2]-bdbox[[1]][1]#
+ypx<-bdbox[[2]][2]-bdbox[[2]][1]#
+#
+xrange<-c(xmin,xmax)#
+yrange<-c(ymin,ymax)#
+firstZ_W<-matrix(FALSE,ypx,xpx)#
+#
+num_Wpx <- length(W_px$x)#
+for(pt in 1:num_Wpx){#
+	row<-W_px$y[pt]#
+	col<-W_px$x[pt]#
+	shiftedrow<-row-bdbox[[2]][1]#
+	shiftedcol<-col-bdbox[[1]][1]#
+	firstZ_W[shiftedrow,shiftedcol]<-TRUE#
+}#
+#
+ryrpt<-ppp(X_mc$x,X_mc$y,window=owin(mask=firstZ_W,xrange,yrange))#
+plot(ryrpt)
+load(spatstat)
+library(spatstat)
+help(rmhmodel)
+mo<-list(cif="strauss",par=c(beta-2,gamma=0.2,r=0.7))
+mo<-list(cif="strauss",par=c(beta-2,gamma=0.2,r=0.7),w=square(10))
+mo<-list(cif="strauss",par=c(beta=2,gamma=0.2,r=0.7),w=square(10))
+X<-rmh(model=mo,start=list(n.start=42),control=list(nrep=1e+06))
+mo<-list(cif="strauss",par=c(beta=2,gamma=0.2,r=0.7),w=square(10))
+X<-rmh(model=mo)
+mo<-list(cif="strauss",par = c(beta=2,gamma=0.2,r=0.7), w=square(10))
+X<-rmh(model=mo)
+mo<-list(cif="strauss", par = c(beta=2,gamma=0.2,r=0.7), w=square(10))
+X<-rmh(model=mo)
+mo
+X<-rmh(model=mo)
+mo<-list(cif="strauss", par = list(beta=2,gamma=0.2,r=0.7), w=square(10))
+X<-rmh(model=mo)
+plot(X)
+help(rmh)
+mo<-list(cif="strauss", par = list(beta=2,gamma=0.0,r=0.7), w=square(10))
+X<-rmh(model=mo)
+plot(X)
+Fest(X)
+f<-Fest(X)
+plot(f)
+mo<-list(cif="strauss-hardcore", par = list(beta=2,gamma=0.0,r=), w=square(10))
+mo<-list(cif="strauss-hardcore", par = list(beta=2,gamma=0.0,r=0.7), w=square(10))
+X<-rmh(model=mo)
+help(rmhmodel)
+mo<-list(cif="StraussHard", par = list(beta=2,gamma=0.0,r=0.7), w=square(10))
+X<-rmh(model=mo)
+mo<-list(cif="strausshard", par = list(beta=2,gamma=0.0,r=0.7), w=square(10))
+X<-rmh(model=mo)
+StraussHard(r=1,hc=0.02)
+plot(ans)
+X<=StraussHard(r=1,hc=0.02)
+X<-StraussHard(r=1,hc=0.02)
+plot(X)
+StraussHard(r=1,hc=0.02)
+data(cells)
+plot(data)
+data
+data(cells)
+cells
+plot(cells)
+cells
+plot(cells)
+ppm(cells,~1,StraussHard(r=0.1,hc=0.05))
+help(ppm)
+mo<-list(cif="straussh", par = list(beta=2,gamma=0.0,r=0.7,hc=0.3), w=square(10))
+X<-rmh(model=mo)
+mo<-list(cif="straush", par = list(beta=2,gamma=0.0,r=0.7,hc=0.3), w=square(10))
+X<-rmh(model=mo)
+plot(X)
+mo<-list(cif="straush", par = list(beta=2,gamma=0.0,r=10,hc=0.8), w=square(20))
+X<-rmh(model=mo)
+plot(X)
+mo<-list(cif="straush", par = list(beta=2,gamma=1,r=10,hc=0.8), w=square(20))
+plot(X)
+X<-rmh(model=mo)
+plot(X)
+mo<-list(cif="straush", par = list(beta=20,gamma=1,r=10,hc=0.8), w=square(20))
+plot(X)
+X<-rmh(model=mo)
+plot(X)
+X
+mo<-list(cif="straush", par = list(beta=2,gamma=1,r=10,hc=0.8), w=square(20))
+X<-rmh(model=mo)
+X
+help(ppm)
+library(spatstat)
+help(rmh)
+help(ppm)
 Modified/corrected/commented by Vijay Rajagopal#
 #                             - added split in radial versus axial distance of RyR cluster to Z-disc#
 #                             - added termination criteria#
@@ -785,6 +574,13 @@ Modified/corrected/commented by Vijay Rajagopal#
 #                            - torus metric edge correction implemented#
 #                            - quantiles added to Energy #
 #                            - iterative updating of metrics implemented#
+#implemented by Gregory Bass#
+#                            - parallelising simulator#
+#                            - writing text file with elapsed time and number of cores used#
+#                            - Added '1.0' value to 'nndbreaks' and 'radbreaks'#
+#                            - Voxel resolution set automatically via appropriate matlab file#
+#                            - input and output paths can now be set to any folder, not just the source folder for the simulator package#
+#
 # Original ideas developed in collaboration with Evan Blumgart 02/02/11 (refer to Masters thesis from University of Auckland, 2011)#
 # This code implements the Reconstruction Algorithm using the mean and quantiles of the axial and radial distances of RyR clusters from the z-discs and the nearest neighbour distances of the RyR clusters as modelling metrics.#
 # FUTURE FEATURE: Can also using distance function and nearest neighbour distance variances as metrics#
@@ -879,24 +675,37 @@ obsdaxi <- Daxi[as.matrix(allX_pix)]#
 oDistAxiMeasure=numeric(numMeasures)#
 oDistAxiMeasure[1] <- mean(obsdaxi)#
 oDistAxiMeasure[2] <- sd(obsdaxi) #
-oDistAxiMeasure[3:9] <- quantile(obsdaxi,seq(0.125,0.875,length=7))#
-#
-####replaced X with allX - July 22nd 2012#
+oDistAxiMeasure[3:9] <- quantile(obsdaxi,seq(0.125,0.875,length=7))
+replaced X with allX - July 22nd 2012#
 ####introduced allX_pix instead of using res - Oct 23 2012#
 # compute mean of observed measures for nearest neigbour distance#
 #obsNNd = findObsNNDist_CGW(X,allX,l,u) # correct for this data - can't simulate all X as W is too small#
 #nearest neighborhood distances.#
-obsNNd = findObsNNDist_CGW(allX,allX,l,u)
-mean(obsNNd)
-sd(obsNNd)
-obsNNd<-obsNNd+0.2
-mean(obsNNd)
+obsNNd = findObsNNDist_CGW(allX,allX,l,u)#
 oNNdMeasure=numeric(numMeasures)#
 oNNdMeasure[1] <- mean(obsNNd)#
 oNNdMeasure[2] <- sd(obsNNd) #
-oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))#
-#
-#set up histogram parameters#
+oNNdMeasure[3:9] <- quantile(obsNNd,seq(0.125,0.875,length=7))
+oNNdMeasure
+obsNNd
+oNNdMeasure
+length(obsNNd)
+fixedNNd[1:328]=0.0
+type(obsNNd)
+typeof(obsNNd)
+obsNNd[0]
+obsNNd[1]
+fixedNNd<-numeric(328)
+fixedNNd
+fixedNNd<-fixedNNd+mean(obsNNd)
+fixedNNd
+oNNdMeasure=numeric(numMeasures)#
+oNNdMeasure[1] <- mean(obsNNd)#
+oNNdMeasure[2] <- 0.0#
+oNNdMeasure[3:9] <- quantile(fixedNNd),seq(0.125,0.875,length=7))
+oNNdMeasure[3:9] <- quantile(fixedNNd,seq(0.125,0.875,length=7))
+oNNdMeasure
+set up histogram parameters#
 filename="master_cell"#
 main = "Master Cell"#
 #breaks in distance for each distance type#
@@ -952,6 +761,40 @@ u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
 l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
 #
 #u_block = 0.9*(u-l)#
+#l_block = 0.1*(u-l)
+png(filename=paste(path3,filename,"_fixednnd.png",sep=""), height=295, width=300,
+bg="white")
+hist(fixedNNd,breaks=nndbreaks,xlab="Nearest Neighbour Distances for RyR clusters",main=main)
+dev.off()
+introduce intensity factor - October 11 2012#
+ factor = 1 #no change of intensity#
+# factor = 0.7 #70% intensity#
+#
+###FOLOWING USED IF CHANGING CELL - commented out here#
+##read in info for vijay's cell#
+##w = read.table(paste(path3,"Cell10_available_lowres_myo_mito_stack_correct_2012.txt",sep=""),header=T)#
+W=read.csv(paste(path4,"W_micron.txt",sep=""),header=T) #
+w = read.csv(paste(path4,"W_pixel.txt",sep=""),header=T)#
+#W = (w - 1)*res#
+##d = read.table(paste(path3,"Cell10_dFunc_avs_lowres_myo_mito_stack_correct_2012.txt",sep=""),header=T)#
+drad = read.csv(paste(path4,"d_radial_micron.txt",sep=""),header=T)#
+Drad = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+#D = array(dim=u/res+1)#
+Drad[as.matrix(w)]<-abs(drad$d)#
+##
+daxi = read.csv(paste(path4,"d_axial_micron.txt",sep=""),header=T)#
+Daxi = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) #
+#D = array(dim=u/res+1)#
+Daxi[as.matrix(w)]<-abs(daxi$d)#
+##
+#
+l=apply(W,2,min)#
+u=apply(W,2,max)#
+vol_obsBox <- prod(u-l)#
+u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
+l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
+#
+#u_block = 0.9*(u-l)#
 #l_block = 0.1*(u-l)#
 #
 #######################################
@@ -971,7 +814,7 @@ registerDoSNOW(cl)#
 #
 # Read in the number of rows from the sampling box data#
 # This is the number of points that the algorithm will try to simulate on the new cell geometry#
-N= 87 #floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)#
+N= 123 #floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)#
 #X_target=read.csv(paste(path4,"X_micron.txt",sep=""),header=T)#
 #N = nrow(X_target)#
 #
@@ -1112,104 +955,3 @@ t2 <- proc.time()    # toc#
 #write out elapsed time and number of cores used#
 cat(c({t2-t1}[3],"seconds","\n"),file=paste(path3,"elapsed_time",".txt"),sep=' ')  # write elapsed time to file#
 cat(c(numCores, "cores"), file=paste(path3,"elapsed_time",".txt"),sep=' ',append=TRUE)  # write number of cores to file
-Written by Evan Blumgart 02/02/11#
-# Modified/commented by Vijay Rajagopal#
-# Corrected by Cameron Walker #
-#                            - sped up (looping removed where possible)#
-#                            - torus metric edge correction implemented#
-#                            - quantiles added to Energy #
-#                            - iterative updating of metrics implemented#
-# This code implements the Reconstruction Algorithm using the mean of the distance function and nearest neighbour distances as modelling metrics.#
-# (Can also using distance function and nearest neighbour distance variances as metrics)#
-#The code first reads in the RyR and z-disk data from an experiment and calculates the nearest neighbour and distance functions. #
-#This is then set up as the target statistic that the reconstruction algorithm must recreate on a new z-disk dataset from a different experiement #
-#with no RyRs on it. It basically assumes that the RyR characteristics of the first experimental data is typical of the distribution in these cells. #
-#(male adult wistar rats)#
-#path="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
-#path="C:\\Users\\cameron\\Dropbox\\RyR\\"#
-path="/Users/vrajagopal/Documents/heart/sims/R/camSim/"#
-source(paste(path,"CGW_sim.R",sep=""))#
-#path2="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
-#path3="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
-#path4="/Users/vraj004/Documents/heart/data/soeller/Bass/Cell1_processing&analysis/MATLAB_outputs/SR_width_9/"#
-path2="/Users/vrajagopal/Documents/heart/sims/R/camSim/sham11/Cell1/SR_width_6/"#
-path3="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/human/"#
-path4="/Users/vrajagopal/Documents/heart/sims/R/camSim/sham11/Cell1/"#
-#path3="C:\\Users\\cwal003\\Documents\\cam\\Vijay\\RyR\\fromGregBass\\run1Oct118\\"#
-#path2="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\output_VJ_2\\"#
-#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\walker_ryrsim_inputs\\"#
-#path3="D:\\docs\\Users\\Cameron\\Research\\bioInstitute\\Vijay\\RyR Sim\\Final Data\\"#
-##change this to be the new cell, not Evan's cell#
-# read in the coordinates of all the observed RyR's inside sampling box of the experimental data - stored in a file X.txt#
-#X=read.table(paste(path,"X.txt",sep=""),header=T)#
-X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)#
-X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)#
-# read in whole RyR data cloud of the experimental data stored in a file allX.txt#
-#allX=read.table(paste(path,"allX.txt",sep=""),header=T)#
-allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)#
-allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)#
-# read in non-myofibril voxels of the experimental data stored in a file Wfix.txt#
-#W=read.table(paste(path,"Wfix.txt",sep=""),header=T) #why doesn't product of D dims = length(W$x) - are some voxels missing?#
-W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) #
-# read in distance function of voxels in W for the experimental data. stored in a file d.txt#
-#d=read.table(paste(path,"dfix.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
-drad=read.csv(paste(path2,"d_radial_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
-daxi=read.csv(paste(path2,"d_axial_micron.txt",sep=""),header=T) #I think this is the distance from given voxel (W) to z-disk#
-# define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.#
-#note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code#
-#be aware what coordinate system was used in the code that generated that image and the coordinate system used in this code.#
-#l=apply(W,2,min)#
-#u=apply(W,2,max)#
-#u_block = 0.9*(u-(u-l)/2)+(u-l)/2#
-#l_block = 0.9*(l-(u-l)/2)+(u-l)/2#
-#block = apply( X,1,function(z){all((l_block<=z)&(z<=u_block))} )#
-#X_block = X[block,]#
-#allX = X#
-#allX_pix=X_pix#
-#X=X_block#
-#vol_obsBox <- prod(u-l)#
-#Would like to use allX and X as measured by Evan, but do not have any of the distance information#
-# for allX, so will treat X as allX and take a smaller block within X as X#
-numMeasures = 9#
-numSim=119#
-#
-library(spatstat)#
-library(s20x)#
-#
-x_u=1.5*max(X$x)#
-x_l=.5*min(X$x)#
-y_u=1.5*max(X$y)#
-y_l=.5*min(X$y)#
-z_u=1.5*max(X$z)#
-z_l=.5*min(X$z)#
-#
-#create box of observed points; ignore myofibrils in calculation of K, F and G. #
-win=box3(c(x_l,x_u),c(y_l,y_u),c(z_l,z_u))#
-#
-#generate variable P as a point process of the observed ryrs#
-P <- pp3(X$x, X$y, X$z, win)#
-S=list(numSim)#
-sP=list(numSim)#
-for (i in 1:numSim){#
-   S[[i]]=read.table(paste(path3,"simPP",i,".txt",sep=""),header=F)#
-   sP[[i]]=pp3(S[[i]][,1],S[[i]][,2],S[[i]][,3],win)#
-}#
-#
-#####################Spatstat 3D envelope #
-#
-simEnvF <- envelope.pp3(P, fun=F3est, nsim=59, simulate=sP, nrank=1,global=TRUE,ginterval=c(0,2))#
-simEnvG <- envelope.pp3(P, fun=G3est, nsim=59, simulate=sP, nrank=1,global=TRUE,ginterval=c(0,2))#
-simEnvK <- envelope.pp3(P, fun=K3est, nsim=59, simulate=sP, nrank=1,global=TRUE,ginterval=c(0,2))#
-simEnvP <- envelope.pp3(P, fun=pcf3est, nsim=59, simulate=sP, nrank=1,global=TRUE,ginterval=c(0,2))#
-library(s20x)#
-layout20x(2,2)#
-plot(simEnvF,main="F-Envelope (Cell 1 Dist., Cell 1 Geom )",xlim=c(0,2))#
-plot(simEnvG,main="G-Envelope (Cell 1 Dist., Cell 1 Geom )",xlim=c(0,2))#
-plot(simEnvK,main="K-Envelope (Cell 1 Dist., Cell 1 Geom )",xlim=c(0,2))#
-plot(simEnvP,main="PCF-Envelope (Cell 1 Dist., Cell 1 Geom )",xlim=c(0,2))
-simG<-G3est(P)
-plot(simG)
-simG<-G3est(sP[[1]])
-plot(simG)
-plot(sP[[1]])
-plot(P)

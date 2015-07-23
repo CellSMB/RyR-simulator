@@ -10,7 +10,11 @@
     <variable initial_value="10" name="releasetime" units="ms"/>
     <variable initial_value="2e-15" name="iCa" units="Cperms"/>
     <variable initial_value="96500" name="F" units="Cpermol"/>
-    <math xmlns="http://www.w3.org/1998/Math/MathML"><apply><eq/><ci>Jryr</ci><piecewise><piece><cn>0</cn><apply><and/><apply><geq/><ci>time</ci><cn>0</cn></apply><apply><lt/><ci>time</ci><ci>timelag</ci></apply></apply></piece><otherwise><apply><divide/><apply><times/><ci>G</ci><ci>iCa</ci><ci>ryrDensity</ci><cn>1000000000000000000000</cn></apply><apply><times/><cn xmlns:cellml="http://www.cellml.org/cellml/1.1#" cellml:units="dimensionless">2</cn><ci>F</ci><ci>Vcyto</ci></apply></apply></otherwise></piecewise></apply><apply><eq/><ci>G</ci><apply><times/><apply><exp/><apply><divide/><apply><minus/><ci>time</ci></apply><ci>taurise</ci></apply></apply><apply><minus/><cn xmlns:cellml="http://www.cellml.org/cellml/1.1#" cellml:units="dimensionless">1</cn><apply><exp/><apply><divide/><apply><minus/><ci>time</ci></apply><ci>taudecay</ci></apply></apply></apply></apply></apply></math>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+      <apply>
+        <eq/><ci>Jryr</ci><piecewise><piece><cn>0</cn><apply><and/><apply><geq/><ci>time</ci><cn>0</cn></apply><apply><lt/><ci>time</ci><ci>timelag</ci></apply></apply></piece><otherwise><apply><divide/><apply><times/><ci>G</ci><ci>iCa</ci><ci>ryrDensity</ci><cn>1000000000000000000000</cn></apply><apply><times/><cn xmlns:cellml="http://www.cellml.org/cellml/1.1#" cellml:units="dimensionless">2</cn><ci>F</ci><ci>Vcyto</ci></apply></apply></otherwise></piecewise>
+      </apply>
+      <apply><eq/><ci>G</ci><apply><times/><apply><exp/><apply><divide/><apply><minus/><ci>time</ci></apply><ci>taurise</ci></apply></apply><apply><minus/><cn xmlns:cellml="http://www.cellml.org/cellml/1.1#" cellml:units="dimensionless">1</cn><apply><exp/><apply><divide/><apply><minus/><ci>time</ci></apply><ci>taudecay</ci></apply></apply></apply></apply></apply></math>
     <variable name="Jryr" public_interface="out" units="uMperms"/>
     <variable initial_value="1" name="ryrDensity" units="perum3"/>
   <variable initial_value="4.19e-3" name="Vcyto" units="um3"/><variable name="G" units="dimensionless"/><variable initial_value="10" name="taurise" units="ms"/><variable initial_value="10" name="taudecay" units="ms"/></component>

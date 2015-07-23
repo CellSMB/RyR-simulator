@@ -6,9 +6,9 @@ path2="/Users/vrajagopal/Documents/heart/sims/R/camSim/sham11/Cell1/SR_width_6/"
 #path of target geometry
 path4="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/"
 #path of output files
-path3="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/human/"
+path3="/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/fixedNND/"
 N=123
 etol = 0.005
 numIter = 2000000
-numPatterns = 120
+numPatterns = 7
 numCores = 7
