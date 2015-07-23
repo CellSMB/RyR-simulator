@@ -1,6 +1,6 @@
 RyR-simulator
 =============
-An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Please refer to this website if you use this code for your research. We will provide details of the paper we have submitted once it is accepted for publication. 
+An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Citation reference to be provided soon by PLoS Computational Biology 
 
 **required Applications/Packages**
 ----------------------------------
@@ -35,6 +35,14 @@ target-tomo-cell/
 
  - directory of output files of RyR cluster distributions on a tomogram-derived template of myofibrils and mitochondria.
 
+experimental-data/:
+
+electron-microscopy/
+ - directory containing electron microscopy image stack (cardiac_cell_tomogram.rec) of myofibrils and mitochondria that was reconstructed from an electron tomography tilt series. The folder contains .mod files which contain manual segmentations of myofibrils, mitochondria and sarcolemma. The folder also contains the generated tif sequences from these models that were used to generate the RyR clusters.
+ 
+ confocal-microscopy/
+  - directory containing the raw confocal image stacks of phalloidin and RyR clusters used for the analysis of RyR cluster distributions. Both raw and deconvolved datasets are available. 
+  
 fem_simulation_inputs:
 
 tomo_mesh.1.node/ele/face
