@@ -1,6 +1,6 @@
 RyR-simulator
 =============
-An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Citation reference to be provided soon by PLoS Computational Biology 
+An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Citation reference to be provided soon by PLoS Computational Biology. Visitors interested in using the finite element geometric model (and associated FE reaction-diffusion simulation codes) can obtain all the codes and mesh inputs at https://github.com/vraj004/cardiac_ecc 
 
 **required Applications/Packages**
 ----------------------------------
@@ -43,21 +43,7 @@ electron-microscopy/
  confocal-microscopy/
   - directory containing the raw confocal image stacks of phalloidin and RyR clusters used for the analysis of RyR cluster distributions. Both raw and deconvolved datasets are available. 
   
-fem_simulation_inputs:
-
-tomo_mesh.1.node/ele/face
- 
- - tetgen generated half-sarcomere mesh files of an electron-tomogram derived rat ventricular myocyte
-
-tomo_mesh.1.bdnode
-
- - node numbers of the mesh around the outer surface.
-
-ryrClusterDensity_and_releaseTimeLag_fields_N123_simPP3_tausim2
-
- - text file containing spatially varying fields representing density of ryr clusters and the ryr-cluster associated lag in triggering of calcium release; the fields are defined at the mesh nodes. 
-
-source:
+source/:
 
 contains all the source files for running in R.
 
