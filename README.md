@@ -34,14 +34,6 @@ target-cell/
 target-tomo-cell/
 
  - directory of output files of RyR cluster distributions on a tomogram-derived template of myofibrils and mitochondria.
-
-experimental-data/:
-
-electron-microscopy/
- - directory containing electron microscopy image stack (cardiac_cell_tomogram.rec) of myofibrils and mitochondria that was reconstructed from an electron tomography tilt series. The folder contains .mod files which contain manual segmentations of myofibrils, mitochondria and sarcolemma. The folder also contains the generated tif sequences from these models that were used to generate the RyR clusters.
- 
- confocal-microscopy/
-  - directory containing the raw confocal image stacks of phalloidin and RyR clusters used for the analysis of RyR cluster distributions. Both raw and deconvolved datasets are available. 
   
 source/:
 
@@ -52,6 +44,10 @@ contains all the source files for running in R.
 *ryr-simulator-parallel.R*: The main program to run the RyR cluster simulator with parallel processing. 
 
 *nnd-calculators.R*: A bunch of calculators of nearest-neighborhood distances; currently using CGW version which measures torus distance. 
+
+**EXPERIMENTAL DATA**
+---------------------
+The electron microscopy data and confocal microscopy data used for this study have been shared online at https://dx.doi.org/10.4225/49/55B622EBE2D4C
 
 RUNNING ONE OF THE SCRIPTS
 --------------------------
