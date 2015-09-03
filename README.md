@@ -1,6 +1,8 @@
 RyR-simulator
 =============
-An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Citation reference to be provided soon by PLoS Computational Biology. Visitors interested in using the finite element geometric model (and associated FE reaction-diffusion simulation codes) can obtain all the codes and mesh inputs at https://github.com/vraj004/cardiac_ecc 
+An R-statistics package script for simulating anatomically realistic distributions of RyR clusters around mitochondria and the contractile machinery. Published in PLoS Computational Biology: http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004417. 
+
+Visitors interested in using the finite element geometric model (and associated FE reaction-diffusion simulation codes) can obtain all the codes and mesh inputs at https://github.com/vraj004/cardiac_ecc 
 
 **required Applications/Packages**
 ----------------------------------
