@@ -34,7 +34,7 @@
 
 t1 <- proc.time()  # tic
 
-setwd("/Users/vrajagopal/RyR-Simulator/source")
+setwd("/Users/vrajagopal/RyR-simulator/source")
 
 source("settings.R")
 path=getwd()
@@ -341,3 +341,7 @@ t2 <- proc.time()    # toc
 #write out elapsed time and number of cores used
 cat(c({t2-t1}[3],"seconds","\n"),file=paste(path3,"elapsed_time",".txt"),sep=' ')  # write elapsed time to file
 cat(c(numCores, "cores"), file=paste(path3,"elapsed_time",".txt"),sep=' ',append=TRUE)  # write number of cores to file
+########plot a dynamic, interactive window to visualise the first RyR simulation
+P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
+library(rgl)
+plot3d(P)

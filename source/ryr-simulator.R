@@ -288,6 +288,9 @@ for (j in 1:numPatterns) {
    write(t(P_block),file=paste(path,path3,"simPP_block",j,".txt",sep=""),ncolumns=3,sep='\t')
 }
 
-
+########plot a dynamic, interactive window to visualise the first RyR simulation
+P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
+library(rgl)
+plot3d(P)
 
 
