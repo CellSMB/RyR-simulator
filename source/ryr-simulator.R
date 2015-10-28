@@ -36,20 +36,20 @@ source(paste(path,"/nnd-calculators.R",sep="")) #additional functions for calcul
 #path4="/../input-files/target-cell/"
 
 # read in the coordinates of all the observed RyR's inside sampling box of the experimental data (master cell) - stored in a file X.txt (read in micron and pixel versions)
-X=read.csv(paste(path,path2,"X_micron.txt",sep=""),header=T)
-X_pix=read.csv(paste(path,path2,"X_pixel.txt",sep=""),header=T)
+X=read.csv(paste(path2,"X_micron.txt",sep=""),header=T)
+X_pix=read.csv(paste(path2,"X_pixel.txt",sep=""),header=T)
 
 # read in whole RyR data cloud of the experimental data stored in a file allX.txt
-allX=read.csv(paste(path,path2,"allX_micron.txt",sep=""),header=T)
-allX_pix=read.csv(paste(path,path2,"allX_pixel.txt",sep=""),header=T)
+allX=read.csv(paste(path2,"allX_micron.txt",sep=""),header=T)
+allX_pix=read.csv(paste(path2,"allX_pixel.txt",sep=""),header=T)
 
 # read in non-myofibril voxels of the experimental data stored in a file W.txt
-W=read.csv(paste(path,path2,"W_micron.txt",sep=""),header=T) 
-w=read.csv(paste(path,path2,"W_pixel.txt",sep=""),header=T)
+W=read.csv(paste(path2,"W_micron.txt",sep=""),header=T) 
+w=read.csv(paste(path2,"W_pixel.txt",sep=""),header=T)
 
 # read in distance function of voxels in W for the experimental data. stored in a file d.txt
-drad=read.csv(paste(path,path2,"d_radial_micron.txt",sep=""),header=T) #Radial distance from given voxel (W) to z-disk
-daxi=read.csv(paste(path,path2,"d_axial_micron.txt",sep=""),header=T) #Axial distance from given voxel (W) to z-disk
+drad=read.csv(paste(path2,"d_radial_micron.txt",sep=""),header=T) #Radial distance from given voxel (W) to z-disk
+daxi=read.csv(paste(path2,"d_axial_micron.txt",sep=""),header=T) #Axial distance from given voxel (W) to z-disk
 
 # define box boundaries of the experimental data that we are using to calculate nearest neighbour and distance function statistics.
 #note that directions x1, y1 and z1 have different meanings in different image processing/stats processing codes. So, when reading a file into this code
@@ -118,17 +118,17 @@ nndbreaks = c(0,0.2,0.4,0.6,0.8,1.2)
 radbreaks = c(0,0.2,0.4,0.6,0.8)
 
 # Start PNG device driver to save output to figure.png
-png(filename=paste(path,path3,filename,"_obsdrad.png",sep=""), height=295, width=300, 
+png(filename=paste(path3,filename,"_obsdrad.png",sep=""), height=295, width=300, 
  bg="white")
 
  hist(obsdrad,breaks=radbreaks,xlab="Radial Distance of RyR cluster from Z-disc",main=main)
  dev.off()
-png(filename=paste(path,path3,filename,"_obsdaxi.png",sep=""), height=295, width=300, 
+png(filename=paste(path3,filename,"_obsdaxi.png",sep=""), height=295, width=300, 
  bg="white")
 
  hist(obsdaxi,breaks="Scott",xlab="Axial Distance of RyR cluster from Z-disc",main=main)
  dev.off()
-png(filename=paste(path,path3,filename,"_obsnnd.png",sep=""), height=295, width=300, 
+png(filename=paste(path3,filename,"_obsnnd.png",sep=""), height=295, width=300, 
  bg="white")
 
  hist(obsNNd,breaks=nndbreaks,xlab="Nearest Neighbour Distances for RyR clusters",main=main)
@@ -143,16 +143,16 @@ oldVol_obsBox = vol_obsBox
 ###FOLOWING USED IF CHANGING CELL - commented out here
 ##read in info for vijay's cell
 ##w = read.table(paste(path3,"Cell10_available_lowres_myo_mito_stack_correct_2012.txt",sep=""),header=T)
-W=read.csv(paste(path,path4,"W_micron.txt",sep=""),header=T) 
-w = read.csv(paste(path,path4,"W_pixel.txt",sep=""),header=T)
+W=read.csv(paste(path4,"W_micron.txt",sep=""),header=T) 
+w = read.csv(paste(path4,"W_pixel.txt",sep=""),header=T)
 #W = (w - 1)*res
 ##d = read.table(paste(path3,"Cell10_dFunc_avs_lowres_myo_mito_stack_correct_2012.txt",sep=""),header=T)
-drad = read.csv(paste(path,path4,"d_radial_micron.txt",sep=""),header=T)
+drad = read.csv(paste(path4,"d_radial_micron.txt",sep=""),header=T)
 Drad = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) 
 #D = array(dim=u/res+1)
 Drad[as.matrix(w)]<-abs(drad$d)
 #
-daxi = read.csv(paste(path,path4,"d_axial_micron.txt",sep=""),header=T)
+daxi = read.csv(paste(path4,"d_axial_micron.txt",sep=""),header=T)
 Daxi = array(dim=c(max(w[,1]),max(w[,2]),max(w[,3]))) 
 #D = array(dim=u/res+1)
 Daxi[as.matrix(w)]<-abs(daxi$d)
@@ -273,19 +273,19 @@ for (j in 1:numPatterns) {
 	}
 	if(1){
 		sim_convgdE[j] <- E
-		write(t(simX),file=paste(path,path3,"simPP",j,".txt",sep=""),ncolumns=3,sep='\t')
+		write(t(simX),file=paste(path3,"simPP",j,".txt",sep=""),ncolumns=3,sep='\t')
 	}
 	else j=j-1
 }
 #t2 <- proc.time()
 #print(t2-t1)
 #write out the list of final E values for the each of the converged patterns
-write(sim_convgdE,file=paste(path,path3,"sim_convgdE",".txt",sep=""),ncolumns=1,sep='\t')
+write(sim_convgdE,file=paste(path3,"sim_convgdE",".txt",sep=""),ncolumns=1,sep='\t')
 for (j in 1:numPatterns) {
-   P=read.table(paste(path,path3,"simPP",j,".txt",sep=""),header=F)
+   P=read.table(paste(path3,"simPP",j,".txt",sep=""),header=F)
    block = apply( P,1,function(z){all((l_block<=z)&(z<=u_block))} )
    P_block = P[block,]
-   write(t(P_block),file=paste(path,path3,"simPP_block",j,".txt",sep=""),ncolumns=3,sep='\t')
+   write(t(P_block),file=paste(path3,"simPP_block",j,".txt",sep=""),ncolumns=3,sep='\t')
 }
 
 ########plot a dynamic, interactive window to visualise the first RyR simulation
