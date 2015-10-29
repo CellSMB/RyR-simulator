@@ -345,3 +345,5 @@ cat(c(numCores, "cores"), file=paste(path3,"elapsed_time",".txt"),sep=' ',append
 P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
 library(rgl)
 plot3d(P)
+library(tcltk)
+tkmessageBox(title="",message="Click OK to close the plot window",type="ok")

@@ -292,5 +292,7 @@ for (j in 1:numPatterns) {
 P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
 library(rgl)
 plot3d(P)
+library(tcltk)
+tkmessageBox(title="",message="Click OK to close the plot window",type="ok")
 
 
