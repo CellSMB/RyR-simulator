@@ -169,7 +169,6 @@ l_block = 0.9*(l-(u-l)/2)+(u-l)/2
 
 #t1 <- proc.time() #timer
 #N=floor((length(allX$x)/oldVol_obsBox)*vol_obsBox*factor)
-N=169
 sim_convgdE = numeric(numPatterns)
 for (j in 1:numPatterns) {
 	# define initial simulated point pattern and data structures
@@ -291,8 +290,8 @@ for (j in 1:numPatterns) {
 ########plot a dynamic, interactive window to visualise the first RyR simulation
 P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
 library(rgl)
+r3dDefaults$windowRect <- c(0,50, 500, 500)
 plot3d(P)
 library(tcltk)
-tkmessageBox(title="",message="Click OK to close the plot window",type="ok")
-
-
+tkmessageBox(title="",message="Rotate the plot by dragging with the mouse.  Click OK to close",type="ok")
+ 
