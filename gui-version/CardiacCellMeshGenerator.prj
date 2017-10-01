@@ -1,0 +1,146 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="915095262" file="/Users/vrajagopal/RyR-simulator/gui-version/CardiacCellMeshGenerator.prj" location="/Users/vrajagopal/RyR-simulator/gui-version" name="CardiacCellMeshGenerator" target="target.mlapps" target-name="Package App">
+    <param.appname>CardiacCellMeshGenerator</param.appname>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.icon />
+    <param.icons />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.version>1.0</param.version>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.output>/Users/vrajagopal/RyR-simulator/gui-version</param.output>
+    <param.guid>b20f571e-eed7-411f-a9c1-7ff3e1fd0361</param.guid>
+    <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.icon />
+      <param.icons />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.version />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.output />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}/CardiacCellMeshGenerator.m</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>/Users/vrajagopal/Applications/iso2mesh/bbxflatsegment.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/binsurface.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/cgals2m.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/cgalv2m.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/deletemeshfile.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/elemvolume.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/extractloops.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/fallbackexeext.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/finddisconnsurf.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/getexeext.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/getoptkey.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/getplanefrom3pt.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/getvarfrom.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/internalpoint.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/isoctavemesh.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/maxsurf.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/mcpath.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/mergestruct.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/meshcentroid.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/meshcheckrepair.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/meshresample.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/mwpath.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/plotmesh.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/plotsurf.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/plottetra.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/qmeshcut.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/raytrace.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/readmedit.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/readoff.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/readtetgen.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/removedupelem.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/removedupnodes.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/removeisolatednode.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/removeisolatedsurf.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/saveinr.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/saveoff.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/savesurfpoly.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/savetetgenele.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/savetetgennode.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/surf2mesh.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/surfedge.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/surfinterior.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/surfplane.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/surfseeds.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/v2m.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/varargin2struct.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/vol2mesh.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/vol2restrictedtri.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/vol2surf.m</file>
+      <file>/Users/vrajagopal/Applications/iso2mesh/volface.m</file>
+      <file>${PROJECT_ROOT}/generateRyRsimInputs.m</file>
+      <file>${PROJECT_ROOT}/generateSarcomereStacksNMesh.m</file>
+      <file>${PROJECT_ROOT}/spherical_kernel_intensity_estimator.m</file>
+    </fileset.depfun>
+    <fileset.resources>
+      <file>${PROJECT_ROOT}/CardiacCellMeshGenerator.fig</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="/Users/vrajagopal/RyR-simulator" name="gui-version" optional="false">/Users/vrajagopal/RyR-simulator/gui-version</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>/Applications/MATLAB_R2016b.app</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>true</unix>
+      <mac>true</mac>
+      <windows>false</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.12.6</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>maci64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

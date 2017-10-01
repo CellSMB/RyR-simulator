@@ -1,16 +1,10 @@
+function [] = spherical_kernel_intensity_estimator(ryrfile,im_spatres,cellPath,r_sphere,hval)
 %a matlab program to use Diggle 1983 spherical window to estimate intensity
 %distribution of a 3d point pattern
-clear all
-close all
+
 %% input paramters for kernel intensity smoothing
-cellID = '_schneider_tomo'; %cell mesh file name that has been generated during cell geometric mesh set up in generateSarcomereNMesh.m
-meshName = 'combined_tet_mesh_wryrgap.1';
-cellPath = strcat('/Users/vrajagopal/Documents/heart/meshing/cellSpecificPLC/schneider_tomo/','Cell',cellID,'/');
-r_sphere = 0.1; %radius of sphere in which intensity will be measured
-hval=0.05;
+meshName = 'combined_tet_mesh_wryrgap';
 h = [hval,hval,hval]; %spatial step to be taken in x,y,z to do the intensity estimate
-im_spatres = [0.035,0.035,0.035]; %spatial resolution of image in which ryr was simulated
-ryrfile='/Users/vrajagopal/Documents/heart/sims/R/camSim/schneider_tomo_sim/high-res-ryrsim-inputs/fixedNNd/simPP6.txt';
 %% Parameters for RyR calcium release simulation
 
 initial_release_point= 30;%the initial points from which calcium is release. By default, we could have initial_releas_nodes=ryr_release
