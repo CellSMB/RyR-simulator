@@ -1,4 +1,4 @@
-function [combined_nod,combined_el,combined_fac]=generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,mesh_outDir,stack_outDir)
+function [combined_nod,combined_el,combined_fac]=generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,mesh_outDir,stack_outDir,max_surface_size,max_volume_size)
 %Author: Vijay Rajagopal
 %Date: 29/11/2011
 %A matlab script to generate two txt files: (i) A list of all available voxels on which RyRs can be simulated and (ii) the shortest distance to the z-disk plan from each of the available voxels.
@@ -234,7 +234,7 @@ progressbar(8/9);
 % legend('Mitochondria','Sarcolemma');
 % 
 %% generate tet mesh of the combined version
-[combined_nod,combined_el,combined_fac] = v2m(combined_sl_mito_ryrgap,[125,255],5,5,'cgalmesh');
+[combined_nod,combined_el,combined_fac] = v2m(combined_sl_mito_ryrgap,[125,255],max_surface_size,max_volume_size,'cgalmesh');
 combined_nod(:,1) = combined_nod(:,1)*imres(1);
 combined_nod(:,2) = combined_nod(:,2)*imres(2);
 combined_nod(:,3) = combined_nod(:,3)*imres(3);

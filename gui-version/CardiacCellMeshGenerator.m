@@ -22,7 +22,7 @@ function varargout = CardiacCellMeshGenerator(varargin)
 
 % Edit the above text to modify the response to help CardiacCellMeshGenerator
 
-% Last Modified by GUIDE v2.5 01-Oct-2017 09:57:59
+% Last Modified by GUIDE v2.5 02-Oct-2017 15:29:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -198,9 +198,11 @@ global out_dir;
 imres(1) = str2double(get(handles.edit2,'String'));
 imres(2) = str2double(get(handles.edit3,'String'));
 imres(3) = str2double(get(handles.edit4,'String'));
-[combined_nod,combined_el,combined_fac] = generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,out_dir,out_dir);
+max_volume_size = str2double(get(handles.edit8,'String'));
+max_surface_size =str2double(get(handles.edit7,'String'));
+[combined_nod,combined_el,combined_fac] = generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,out_dir,out_dir,max_surface_size,max_volume_size);
 
-meshplot=plotmesh(combined_nod(:,1:3),combined_el,'facecolor','g');
+meshplot=plotmesh(combined_nod(:,1:3),combined_el);
 title('Computational FE mesh generated from segmented tomogram');
 xlabel('x-dimension (micron)');
 ylabel('y-dimension (micron)');
@@ -268,7 +270,7 @@ global hval;
 imres(1) = str2double(get(handles.edit2,'String'));
 imres(2) = str2double(get(handles.edit3,'String'));
 imres(3) = str2double(get(handles.edit4,'String'));
-spherical_kernel_intensity_estimator(ryrfile,imres,out_dir,r_sphere,hval)
+spherical_kernel_intensity_estimator(ryrfile,imres,out_dir,r_sphere,hval);
 
 
 
@@ -311,6 +313,56 @@ hval= str2double(get(hObject,'String'));
 % --- Executes during object creation, after setting all properties.
 function edit6_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit7_Callback(hObject, eventdata, handles)
+% hObject    handle to edit7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit7 as text
+%        str2double(get(hObject,'String')) returns contents of edit7 as a double
+global max_surface_size;
+max_surface_size= str2double(get(hObject,'String'));
+
+
+% --- Executes during object creation, after setting all properties.
+function edit7_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit8_Callback(hObject, eventdata, handles)
+% hObject    handle to edit8 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit8 as text
+%        str2double(get(hObject,'String')) returns contents of edit8 as a double
+global max_volume_size;
+max_volume_size= str2double(get(hObject,'String'));
+
+
+% --- Executes during object creation, after setting all properties.
+function edit8_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit8 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
