@@ -47,6 +47,10 @@ contains all the source files for running in R.
 
 *nnd-calculators.R*: A bunch of calculators of nearest-neighborhood distances; currently using CGW version which measures torus distance. 
 
+gui-version/:
+
+contains a MATLAB GUI for creating a mesh, simulating RyR clusters and generating input files for a finite element description of myofibrils, mitochondria and RyR release sites for calcium signal simulations. 
+
 **EXPERIMENTAL DATA**
 ---------------------
 The electron microscopy data and confocal microscopy data used for this study have been shared online at https://dx.doi.org/10.4225/49/55B622EBE2D4C
