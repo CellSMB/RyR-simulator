@@ -8,7 +8,7 @@ path4="../input-files/target-tomo-cell/"
 #path of output files
 path3="../output-files/target-tomo-cell/"
 N=123
-etol = 0.005
+etol = 0.0005
 numIter = 2000000
-numPatterns = 7
-numCores = 7
+numPatterns = 1
+numCores = 1

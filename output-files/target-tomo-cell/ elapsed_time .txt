@@ -1,2 +1,2 @@
-68.8230000000001 seconds 
+55.169 seconds 
 7 cores

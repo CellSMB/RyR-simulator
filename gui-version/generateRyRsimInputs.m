@@ -6,11 +6,13 @@ function []=generateRyRsimInputs(outDir,imres)
 % get at the available positions for ryrs. 
 %% INPUTS
 %read in ryr gaps image stack
+progressbar;
 sarclength = 1.8;
 total_sarc_slices = round(sarclength/imres(3));
 myofibril_file = 'Myofibrils_halfSarc.tif';
 sarcolemma_file='Sarcolemma_halfSarc.tif';
 ryrgaps_file = 'RyRGaps_halfSarc.tif';
+
 %% PROGRAM EXECUTION
 mffile = [outDir myofibril_file];
 mfinfo = imfinfo(mffile);
@@ -23,8 +25,8 @@ for i = 1:mfz
     image = imread(mffile,i,'Info',mfinfo);
     mf(:,:,i) = image;
 end
-
-%read in sarcolemma stack
+progressbar(1/6);
+%% read in sarcolemma stack
 slfile = [outDir sarcolemma_file];
 slinfo = imfinfo(slfile);
 num_images=numel(slinfo);
@@ -35,8 +37,9 @@ for i = 1:mfz
     image = imread(slfile,i,'Info',slinfo);
     sl(:,:,i) = image;
 end
+progressbar(2/6);
 
-%read in ryr gap  stack to use for calculation of "available".
+%% read in ryr gap  stack to use for calculation of "available".
 mMfile = [outDir ryrgaps_file];
 mMinfo = imfinfo(mMfile);
 num_images=numel(mMinfo);
@@ -54,7 +57,9 @@ for i=1:mfz
     slbw = im2bw(sl(:,:,i));
     available(:,:,i) = im2bw(immultiply(slbw,mM(:,:,i)));%originally mf
 end
-%CALCULATING ALL THE AVAILABLE VOXELS FOR RYR SIMULATION.
+progressbar(3/6);
+
+%% CALCULATING ALL THE AVAILABLE VOXELS FOR RYR SIMULATION.
 [avy,avxz] = find(available==1);
 avInds = find(available==1);
 [avx,avz] = ind2sub([mfx,mfz],avxz);
@@ -67,8 +72,9 @@ av_um = bsxfun(@times, av - ones(size(av)), imres);
 %from all voxels to this z-disc. This part should only calculate distance
 %from myofibrillar regions of the z-disc- look up image stack of myofibrils
 %alone.
+progressbar(4/6);
 
-%NEED TO CHANGE CODE HERE - READ COMMENT ABOVE. CALCULATE DISTANCE OF ALL
+%% NEED TO CHANGE CODE HERE - READ COMMENT ABOVE. CALCULATE DISTANCE OF ALL
 %AVAILABLE VOXELS FROM MYOFIBRILLAR REGIONS.
 
 z_discInd = round((size(mf,3))/2);
@@ -108,8 +114,9 @@ voxres_euclid_axi = imres(3);
 voxres_euclid_rad = sqrt(imres(1)^2+imres(2)^2);
 daxial_avs_um = daxial_avs*voxres_euclid_axi;
 dradial_avs_um = dradial_avs*voxres_euclid_rad;
+progressbar(5/6);
 
-
+%% output
 fileID = fopen([outDir 'd_axial_pixel.txt'],'w');
 fprintf(fileID,'d\r\n');
 fclose(fileID);
@@ -141,4 +148,5 @@ fclose(fileID);
 dlmwrite([outDir 'W_micron.txt'],av_um,'-append','newline','pc');
 %we only need the distance function for the available voxels for ryr simulation in the image
 %stack
+progressbar(6/6);
 

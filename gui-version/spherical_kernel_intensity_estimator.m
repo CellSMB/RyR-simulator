@@ -1,10 +1,12 @@
 function [] = spherical_kernel_intensity_estimator(ryrfile,im_spatres,cellPath,r_sphere,hval)
 %a matlab program to use Diggle 1983 spherical window to estimate intensity
 %distribution of a 3d point pattern
-
+progressbar;
 %% input paramters for kernel intensity smoothing
+
 meshName = 'combined_tet_mesh_wryrgap';
 h = [hval,hval,hval]; %spatial step to be taken in x,y,z to do the intensity estimate
+progressbar(1/7);
 %% Parameters for RyR calcium release simulation
 
 initial_release_point= 30;%the initial points from which calcium is release. By default, we could have initial_releas_nodes=ryr_release
@@ -15,6 +17,7 @@ tausimnum = '1';
 
 sigma = [0.1 0.1 0.1];
 Amp = 1.0;
+progressbar(2/7);
 
 %% load in the simulated RyR points.
 
@@ -28,6 +31,8 @@ while(feof(fid)==0)
     ryrPoints(point,:) = str2num(fgetl(fid));
 end 
 fclose(fid);
+progressbar(3/7);
+
 %% read in the nodes of the generated mesh
 %read in the generated node and ele files
 nodefile = strcat(cellPath,meshName,'.node');
@@ -47,6 +52,7 @@ while(feof(fid)==0 && node<nodesHeader(1))
     
 end
 fclose(fid);
+progressbar(4/7);
 
 %% setting up time lags and Popen for release from each node.
 
@@ -54,6 +60,8 @@ node_timelags = zeros(nodesHeader(1),1);
 node_Popens = zeros(nodesHeader(1),1);
 %pick value between 0 and 1 randomly for each of the ryr cluster points.
 ryrPoint_timelags = exprnd(tau_lag,size(ryrPoints,1),1);
+progressbar(5/7);
+
 %% evaluate the ryr cluster point intensity at each of these mesh nodes using
 %the gaussian function.
 node_ryr_kie = zeros(nodesHeader(1),1);
@@ -96,6 +104,8 @@ fid = fopen(outfile,'w+');
 node_kie_timelags = [node_ryr_kie,node_timelags];
 fprintf(fid,'%f\t%f\n',node_kie_timelags');
 fclose(fid);
+progressbar(6/7);
+
 %% export as mesh and ryr intensities as exnode,exelem,exdata files too.
 
 outfile = strcat(cellPath,meshName,'_spherical_ryr_kie_wh',num2str(hval),'.','_N123_fixedNNd.exdata');
@@ -115,6 +125,7 @@ for i = 1:size(node_ryr_kie,1)
 
 end
 fclose(fid);
+progressbar(7/7);
 
 
 

@@ -342,7 +342,7 @@ t2 <- proc.time()    # toc
 cat(c({t2-t1}[3],"seconds","\n"),file=paste(path3,"elapsed_time",".txt"),sep=' ')  # write elapsed time to file
 cat(c(numCores, "cores"), file=paste(path3,"elapsed_time",".txt"),sep=' ',append=TRUE)  # write number of cores to file
 ########plot a dynamic, interactive window to visualise the first RyR simulation
-P=read.table(paste(path3,"simPP",7,".txt",sep=""),header=F)
+P=read.table(paste(path3,"simPP",1,".txt",sep=""),header=F)
 library(rgl)
 r3dDefaults$windowRect <- c(0,50, 500, 500)
 plot3d(P)
