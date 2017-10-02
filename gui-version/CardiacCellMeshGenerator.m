@@ -198,7 +198,17 @@ global out_dir;
 imres(1) = str2double(get(handles.edit2,'String'));
 imres(2) = str2double(get(handles.edit3,'String'));
 imres(3) = str2double(get(handles.edit4,'String'));
-generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,out_dir,out_dir);
+[combined_nod,combined_el,combined_fac] = generateSarcomereStacksNMesh(slfile,mffile,mtfile,mMfile,imres,out_dir,out_dir);
+
+meshplot=plotmesh(combined_nod(:,1:3),combined_el,'facecolor','g');
+title('Computational FE mesh generated from segmented tomogram');
+xlabel('x-dimension (micron)');
+ylabel('y-dimension (micron)');
+zlabel('z-dimension (micron)');
+legend('Mitochondria','Myofibrils');
+rotate3d on;
+%progressbar(9/9);
+
 
 % --- Executes on button press in pushbutton7.
 function pushbutton7_Callback(hObject, eventdata, handles)
